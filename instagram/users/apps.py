@@ -1,13 +1,13 @@
 from django.apps import AppConfig
-from django.utils.translation import gettext_lazy as _
 
 
 class UsersConfig(AppConfig):
-    name = "instagram.users"
-    verbose_name = _("Users")
+    name = 'instagram.users'
+    verbose_name = "Users"
 
     def ready(self):
-        try:
-            import instagram.users.signals  # noqa F401
-        except ImportError:
-            pass
+        """Override this to put in:
+            Users system checks
+            Users signal registration
+        """
+        pass

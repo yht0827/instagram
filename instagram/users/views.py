@@ -1,50 +1,206 @@
-from django.contrib.auth import get_user_model
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.urls import reverse
-from django.views.generic import DetailView, RedirectView, UpdateView
-from django.contrib import messages
-from django.utils.translation import ugettext_lazy as _
-
-User = get_user_model()
-
-
-class UserDetailView(LoginRequiredMixin, DetailView):
-
-    model = User
-    slug_field = "username"
-    slug_url_kwarg = "username"
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
+from rest_auth.registration.views import SocialLoginView
+from instagram.notifications import views as notification_views
+from . import models, serializers
 
 
-user_detail_view = UserDetailView.as_view()
+class ExploreUsers(APIView):
+
+    def get(self, request, _format=None):
+
+        last_five = models.User.objects.all().order_by('-date_joined')[:5]
+
+        serializer = serializers.ListUserSerializer(last_five, many=True)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
 
 
-class UserUpdateView(LoginRequiredMixin, UpdateView):
+class FollowUser(APIView):
 
-    model = User
-    fields = ["name"]
+    def post(self, request, user_id, _format=None):
 
-    def get_success_url(self):
-        return reverse("users:detail", kwargs={"username": self.request.user.username})
+        user = request.user
 
-    def get_object(self):
-        return User.objects.get(username=self.request.user.username)
+        try:
+            user_to_follow = models.User.objects.get(id=user_id)
+        except models.User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
 
-    def form_valid(self, form):
-        messages.add_message(
-            self.request, messages.INFO, _("Infos successfully updated")
-        )
-        return super().form_valid(form)
+        user.following.add(user_to_follow)
+        user_to_follow.followers.add(user)
 
+        notification_views.create_notification(user, user_to_follow, 'follow')
 
-user_update_view = UserUpdateView.as_view()
+        return Response(status=status.HTTP_200_OK)
 
 
-class UserRedirectView(LoginRequiredMixin, RedirectView):
+class UnFollowUser(APIView):
 
-    permanent = False
+    def post(self, request, user_id, _format=None):
 
-    def get_redirect_url(self):
-        return reverse("users:detail", kwargs={"username": self.request.user.username})
+        user = request.user
+
+        try:
+            user_to_unfollow = models.User.objects.get(id=user_id)
+        except models.User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user.following.remove(user_to_unfollow)
+        user_to_unfollow.followers.remove(user)
+
+        return Response(status=status.HTTP_200_OK)
 
 
-user_redirect_view = UserRedirectView.as_view()
+class UserProfile(APIView):
+
+    def get_user(self, username):
+
+        try:
+            found_user = models.User.objects.get(username=username)
+            return found_user
+        except models.User.DoesNotExist:
+            return None
+
+    def get(self, request, username, _format=None):
+
+        found_user = self.get_user(username)
+
+        if found_user is None:
+
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        serializer = serializers.UserProfileSerializer(found_user)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    def put(self, request, username, _format=None):
+
+        user = request.user
+
+        found_user = self.get_user(username)
+
+        if found_user is None:
+
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        elif found_user.username != user.username:
+
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+        else:
+
+            serializer = serializers.UserProfileSerializer(
+                found_user, data=request.data, partial=True)
+
+            if serializer.is_valid():
+
+                serializer.save()
+
+                return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+            else:
+
+                return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UserFollowers(APIView):
+
+    def get(self, request, username, _format=None):
+
+        try:
+            found_user = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user_followers = found_user.followers.all()
+
+        serializer = serializers.ListUserSerializer(
+            user_followers, many=True)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class UserFollowing(APIView):
+
+    def get(self, request, username, _format=None):
+
+        try:
+            found_user = models.User.objects.get(username=username)
+        except models.User.DoesNotExist:
+            return Response(status=status.HTTP_404_NOT_FOUND)
+
+        user_following = found_user.following.all()
+
+        serializer = serializers.ListUserSerializer(
+            user_following, many=True)
+
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+
+class Search(APIView):
+
+    def get(self, request, _format=None):
+
+        username = request.query_params.get('username', None)
+
+        if username is not None:
+
+            users = models.User.objects.filter(username__istartswith=username)
+
+            serializer = serializers.ListUserSerializer(users, many=True)
+
+            return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+        else:
+
+            return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePassword(APIView):
+
+    def put(self, request, username, _format=None):
+
+        user = request.user
+
+        if user.username == username:
+
+            current_password = request.data.get('current_password', None)
+
+            if current_password is not None:
+
+                passwords_match = user.check_password(current_password)
+
+                if passwords_match:
+
+                    new_password = request.data.get('new_password', None)
+
+                    if new_password is not None:
+
+                        user.set_password(new_password)
+
+                        user.save()
+
+                        return Response(status=status.HTTP_200_OK)
+
+                    else:
+
+                        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                else:
+
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            else:
+
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+        else:
+
+            return Response(status=status.HTTP_401_UNAUTHORIZED)
+
+
+class FacebookLogin(SocialLoginView):
+    adapter_class = FacebookOAuth2Adapter
