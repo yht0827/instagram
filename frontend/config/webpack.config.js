@@ -423,9 +423,19 @@ module.exports = function(webpackEnv) {
               use: getStyleLoaders(
                 {
                   importLoaders: 2,
-                  sourceMap: isEnvProduction && shouldUseSourceMap
+                  sourceMap: isEnvProduction && shouldUseSourceMap,
+                  modules: true,
+                  camelCase: true,
+                  getLocalIdent: getCSSModuleLocalIdent
                 },
-                "sass-loader"
+                {
+                  loader: require.resolve("sass-loader"),
+                  options: {
+                    includePaths: [paths.appSrc + "/config"],
+                    data: `@import '_variables';`,
+                    sourceMap: shouldUseSourceMap
+                  }
+                }
               ),
               // Don't consider CSS imports dead code even if the
               // containing package claims to have no side effects.
