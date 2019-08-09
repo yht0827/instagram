@@ -3,11 +3,45 @@ import Auth from "./presenter";
 
 class Container extends Component {
   state = {
-    action: "login"
+    action: "login",
+    imageIndex: 1,
+    preImageIndex: 5
   };
+
+  componentDidMount() {
+    setInterval(
+      function() {
+        const { imageIndex, preImageIndex } = this.state;
+
+        if (preImageIndex === 5) {
+          this.setState({
+            preImageIndex: 1
+          });
+        } else {
+          this.setState({ preImageIndex: preImageIndex + 1 });
+        }
+        if (imageIndex === 5) {
+          this.setState({
+            imageIndex: 1
+          });
+        } else {
+          this.setState({ imageIndex: imageIndex + 1 });
+        }
+      }.bind(this),
+      5000
+    );
+  }
+
   render() {
-    const { action } = this.state;
-    return <Auth action={action} changeAction={this._changeAction} />;
+    const { action, imageIndex, preImageIndex } = this.state;
+    return (
+      <Auth
+        action={action}
+        preImageIndex={preImageIndex}
+        imageIndex={imageIndex}
+        changeAction={this._changeAction}
+      />
+    );
   }
 
   _changeAction = () => {

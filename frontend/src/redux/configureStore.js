@@ -1,10 +1,10 @@
 import { createStore, combineReducers, applyMiddleware } from "redux";
-import { routerMiddleware } from "react-router-redux";
-import { connectRouter } from "connected-react-router";
+import { connectRouter, routerMiddleware } from "connected-react-router";
 import thunk from "redux-thunk";
 import { createBrowserHistory } from "history";
 import { composeWithDevTools } from "redux-devtools-extension";
 import { i18nState } from "redux-i18n";
+import photos from "redux/modules/photos";
 import user from "redux/modules/user";
 
 const env = process.env.NODE_ENV;
@@ -20,7 +20,8 @@ if (env === "development") {
 
 const reducer = combineReducers({
   user,
-  routing: connectRouter(history), // 라우터에 히스토리 오브젝트를 준다.
+  photos,
+  router: connectRouter(history), // 라우터에 히스토리 오브젝트를 준다.
   i18nState
 });
 

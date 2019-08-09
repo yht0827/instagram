@@ -1,7 +1,7 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
-import { ConnectedRouter } from "react-router-redux";
+import { ConnectedRouter } from "connected-react-router";
 import store, { history } from "redux/configureStore";
 import App from "components/App";
 import I18n from "redux-i18n";
@@ -9,11 +9,11 @@ import { translations } from "translations";
 
 ReactDOM.render(
   <Provider store={store}>
-    <ConnectedRouter history={history} store={store}>
-      <I18n translations={translations} initialLang="en" fallbackLang="en">
+    <I18n translations={translations} initialLang="en" fallbackLang="en">
+      <ConnectedRouter history={history}>
         <App />
-      </I18n>
-    </ConnectedRouter>
+      </ConnectedRouter>
+    </I18n>
   </Provider>,
   document.getElementById("root")
 );

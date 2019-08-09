@@ -17,7 +17,7 @@
       border-radius: 3px;
       background-color: $bg-color;
       margin-bottom: 5px;
-      font-size: $normal-font-size;
+      font-size: 12px;
       padding: 9px 0 7px 8px;
       font-weight: 400;
 
@@ -32,7 +32,7 @@
     @include blueButton();
 
     svg {
-      margin-right: 10px;
+      margin-right: 5px;
     }
   }
 
@@ -49,10 +49,10 @@
       width: 42%;
       position: absolute;
       background-color: $dark-grey;
-      height: 1px;
+      height: 0.8px;
       left: 0;
       top: 6px;
-      opacity: 0.8;
+      opacity: 0.3;
     }
 
     &:after {
@@ -60,19 +60,37 @@
       width: 42%;
       position: absolute;
       background-color: $dark-grey;
-      height: 1px;
+      height: 0.8px;
       right: 0;
       top: 6px;
-      opacity: 0.8;
+      opacity: 0.3;
     }
   }
 
   .facebook-link {
-    display: flex;
-    align-items: center;
     color: #385185;
+    display: inline-flex;
     justify-content: center;
-    margin-bottom: 25px;
+    align-items: center;
+    margin-bottom: 15px;
+    cursor: pointer;
+    border: 0;
+    background-color: white;
+    font-size: $normal-font-size;
+
+    svg {
+      margin-right: 5px;
+    }
+
+    &:focus,
+    &:active {
+      outline: none;
+    }
+  }
+
+  .facebook-singup-login {
+    @include blueButton();
+    width: 100%;
 
     svg {
       margin-right: 5px;

@@ -7,7 +7,55 @@ import SignupForm from "components/SignupForm";
 const Auth = (props, context) => (
   <main className={styles.auth}>
     <div className={styles.column}>
-      <img src={require("images/phone.png")} alt="Checkout our app. Is cool" />
+      <div className={styles.background}>
+        <div className={styles.imageForm}>
+          <img
+            className={
+              styles.insideImage +
+              `${props.imageIndex === 1 ? " " + styles.active : ""}` +
+              `${props.preImageIndex === 1 ? " " + styles.preactive : ""}`
+            }
+            src={require("images/screenshot1.jpg")}
+            alt=""
+          />
+          <img
+            className={
+              styles.insideImage +
+              `${props.imageIndex === 2 ? " " + styles.active : ""}` +
+              `${props.preImageIndex === 2 ? " " + styles.preactive : ""}`
+            }
+            src={require("images/screenshot2.jpg")}
+            alt=""
+          />
+          <img
+            className={
+              styles.insideImage +
+              `${props.imageIndex === 3 ? " " + styles.active : ""}` +
+              `${props.preImageIndex === 3 ? " " + styles.preactive : ""}`
+            }
+            src={require("images/screenshot3.jpg")}
+            alt=""
+          />
+          <img
+            className={
+              styles.insideImage +
+              `${props.imageIndex === 4 ? " " + styles.active : ""}` +
+              `${props.preImageIndex === 4 ? " " + styles.preactive : ""}`
+            }
+            src={require("images/screenshot4.jpg")}
+            alt=""
+          />
+          <img
+            className={
+              styles.insideImage +
+              `${props.imageIndex === 5 ? " " + styles.active : ""}` +
+              `${props.preImageIndex === 5 ? " " + styles.preactive : ""}`
+            }
+            src={require("images/screenshot5.jpg")}
+            alt=""
+          />
+        </div>
+      </div>
     </div>
     <div className={styles.column}>
       <div className={`${styles.whiteBox} ${styles.formBox}`}>
