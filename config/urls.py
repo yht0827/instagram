@@ -9,6 +9,7 @@ from instagram import views
 urlpatterns = [
     # Django Admin, use {% path 'admin:index' %}
     path(settings.ADMIN_URL, admin.site.urls),
+
     # User management
     path("rest-auth/", include('rest_auth.urls')),
     path("rest-auth/registration/", include('rest_auth.registration.urls')),
@@ -16,9 +17,13 @@ urlpatterns = [
     path("images/", include('instagram.images.urls', namespace='images')),
     path("notifications/", include('instagram.notifications.urls', namespace='notifications')),
     path("accounts/", include('allauth.urls')),
-    path("", views.ReactAppView.as_view()),
+    
     # Your stuff: custom urls includes go here
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+urlpatterns += [
+    path("", views.ReactAppView.as_view()),
+]
 
 if settings.DEBUG:
     # This allows the error pages to be debugged during development, just visit
